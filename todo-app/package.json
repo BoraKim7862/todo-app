@@ -7,10 +7,13 @@
     "start": "node server.js",
     "dev": "node server.js"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
-    "sqlite3": "^5.1.6",
+    "better-sqlite3": "^11.0.0",
     "ws": "^8.14.2"
   },
   "keywords": ["todo", "task-management", "real-time", "collaboration"],
