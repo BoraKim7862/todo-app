@@ -1,0 +1,19 @@
+{
+  "name": "strategy-group-todo",
+  "version": "1.0.0",
+  "description": "경영전략그룹 Daily To do List - Real-time collaborative task management",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "sqlite3": "^5.1.6",
+    "ws": "^8.14.2"
+  },
+  "keywords": ["todo", "task-management", "real-time", "collaboration"],
+  "author": "경영전략그룹",
+  "license": "MIT"
+}

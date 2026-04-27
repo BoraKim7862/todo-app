@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경영전략그룹 Daily To do List</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>📋 경영전략그룹 Daily To do List</h1>
+                <div class="header-actions">
+                    <span class="current-date" id="currentDate"></span>
+                    <button class="btn btn-export" onclick="exportData()" title="데이터 내보내기">
+                        📤 내보내기
+                    </button>
+                    <button class="btn btn-import" onclick="document.getElementById('importFile').click()" title="데이터 가져오기">
+                        📥 가져오기
+                    </button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+                </div>
+            </div>
+        </header>
+
+        <!-- Add Task Form -->
+        <section class="add-task-section">
+            <div class="add-task-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskName">업무명</label>
+                        <input type="text" id="taskName" placeholder="업무명을 입력하세요" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskStatus">상태</label>
+                        <select id="taskStatus">
+                            <option value="in-progress">진행 중</option>
+                            <option value="completed">완료</option>
+                            <option value="on-hold">보류</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskAssignee">담당자 (다중 선택 가능)</label>
+                        <div class="assignee-select-wrapper">
+                            <div class="assignee-dropdown" id="assigneeDropdown">
+                                <div class="assignee-dropdown-header" onclick="toggleAssigneeDropdown()">
+                                    <span id="selectedAssigneesText">담당자 선택</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </div>
+                                <div class="assignee-dropdown-content" id="assigneeDropdownContent">
+                                    <!-- Checkboxes will be rendered here -->
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-manage-assignee" onclick="openAssigneeManager()" title="담당자 관리">
+                                ⚙️
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskPriority">우선순위</label>
+                        <select id="taskPriority">
+                            <option value="high">높음</option>
+                            <option value="medium" selected>보통</option>
+                            <option value="low">낮음</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDueDate">마감일</label>
+                        <input type="date" id="taskDueDate">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="taskDescription">설명</label>
+                        <textarea id="taskDescription" placeholder="업무에 대한 상세 설명을 입력하세요" rows="2"></textarea>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="addTask()">
+                    ➕ 업무 추가
+                </button>
+            </div>
+        </section>
+
+        <!-- Filter and Search -->
+        <section class="filter-section">
+            <div class="filter-controls">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="업무 검색..." oninput="filterTasks()">
+                </div>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">전체</button>
+                    <button class="filter-btn" data-filter="in-progress" onclick="setFilter('in-progress')">진행 중</button>
+                    <button class="filter-btn" data-filter="completed" onclick="setFilter('completed')">완료</button>
+                    <button class="filter-btn" data-filter="on-hold" onclick="setFilter('on-hold')">보류</button>
+                </div>
+                <div class="sort-control">
+                    <select id="sortBy" onchange="sortTasks()">
+                        <option value="date-desc">최신순</option>
+                        <option value="date-asc">오래된순</option>
+                        <option value="priority">우선순위</option>
+                        <option value="due-date">마감일</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Statistics -->
+        <section class="stats-section">
+            <div class="stat-card">
+                <span class="stat-number" id="totalTasks">0</span>
+                <span class="stat-label">전체 업무</span>
+            </div>
+            <div class="stat-card in-progress">
+                <span class="stat-number" id="inProgressTasks">0</span>
+                <span class="stat-label">진행 중</span>
+            </div>
+            <div class="stat-card completed">
+                <span class="stat-number" id="completedTasks">0</span>
+                <span class="stat-label">완료</span>
+            </div>
+            <div class="stat-card on-hold">
+                <span class="stat-number" id="onHoldTasks">0</span>
+                <span class="stat-label">보류</span>
+            </div>
+        </section>
+
+        <!-- Task List -->
+        <section class="task-list-section">
+            <div class="task-list" id="taskList">
+                <!-- Tasks will be rendered here -->
+            </div>
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-icon">📝</div>
+                <p>등록된 업무가 없습니다.</p>
+                <p class="empty-hint">새로운 업무를 추가해보세요!</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Task Detail Modal -->
+    <div class="modal" id="taskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">업무 상세</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Modal content will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>업무 수정</h2>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="editModalBody">
+                <!-- Edit form will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignee Manager Modal -->
+    <div class="modal" id="assigneeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>담당자 관리</h2>
+                <button class="modal-close" onclick="closeAssigneeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="assigneeModalBody">
+                <!-- Assignee management will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
